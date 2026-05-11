@@ -99,6 +99,7 @@ static_library("libbsdiff") {
   sources = [
     "brotli_compressor.cc",
     "bsdiff.cc",
+    "bsdiff_zip.cc",
     "bz2_compressor.cc",
     "compressor_buffer.cc",
     "diff_encoder.cc",

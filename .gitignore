@@ -16,3 +16,5 @@
 
 # Generated dependencies
 /.deps
+# Local build output
+/build/

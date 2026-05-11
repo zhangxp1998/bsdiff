@@ -10,7 +10,7 @@ BINARIES := $(EXECUTABLES-y) $(LIBRARIES-y)
 
 INSTALL = install
 CPPFLAGS += -Iinclude -I..
-CXXFLAGS += -std=c++11 -O3 -Wall -Werror -fPIC
+CXXFLAGS += -std=c++14 -O3 -Wall -Werror -Wno-unused-parameter -fPIC
 
 DESTDIR ?=
 PREFIX = /usr
@@ -35,6 +35,7 @@ clean:
 bsdiff_src_files := \
     brotli_compressor.cc \
     bsdiff.cc \
+    bsdiff_zip.cc \
     bz2_compressor.cc \
     compressor_buffer.cc \
     diff_encoder.cc \

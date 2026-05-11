@@ -43,6 +43,8 @@ class BsdiffArguments {
 
   int brotli_quality() const { return brotli_quality_; }
 
+  bool zip_aware() const { return zip_aware_; }
+
   // Parse the command line arguments of the main function and set all the
   // fields accordingly.
   bool ParseCommandLine(int argc, char** argv);
@@ -77,6 +79,8 @@ class BsdiffArguments {
   int brotli_quality_;
 
   size_t min_length_{0};
+
+  bool zip_aware_{false};
 };
 
 }  // namespace bsdiff

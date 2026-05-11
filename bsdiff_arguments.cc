@@ -32,6 +32,7 @@ const struct option OPTIONS[] = {
     {"minlen", required_argument, nullptr, 0},
     {"type", required_argument, nullptr, 0},
     {"brotli_quality", required_argument, nullptr, 0},
+    {"zip", no_argument, nullptr, 0},
     {nullptr, 0, nullptr, 0},
 };
 
@@ -99,6 +100,8 @@ bool BsdiffArguments::ParseCommandLine(int argc, char** argv) {
                         BROTLI_MAX_QUALITY)) {
         return false;
       }
+    } else if (name == "zip") {
+      zip_aware_ = true;
     } else {
       std::cerr << "Unrecognized options: " << name << endl;
       return false;

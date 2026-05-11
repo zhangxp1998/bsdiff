@@ -90,8 +90,13 @@ int GenerateBsdiffFromFiles(const char* old_filename,
     return 1;
   }
 
-  int ret = bsdiff::bsdiff(old_buf, oldsize, new_buf, newsize,
-                           arguments.min_length(), patch_writer.get(), nullptr);
+  int ret = arguments.zip_aware()
+                ? bsdiff::bsdiff_zip(old_buf, oldsize, new_buf, newsize,
+                                     arguments.min_length(), patch_writer.get(),
+                                     nullptr)
+                : bsdiff::bsdiff(old_buf, oldsize, new_buf, newsize,
+                                  arguments.min_length(), patch_writer.get(),
+                                  nullptr);
 
   munmap(old_buf, oldsize);
   munmap(new_buf, newsize);
@@ -123,7 +128,9 @@ void PrintUsage(const std::string& proc_name) {
                "the patch, bsdf2 format only. Multiple supported compressors "
                "should be split by ':', e.g. bz2:brotli.\n"
             << "  --brotli_quality                   Quality of the brotli "
-               "compressor.\n";
+               "compressor.\n"
+            << "  --zip                              Match same-name ZIP entry "
+               "payloads independently; output remains standard bspatch.\n";
 }
 
 }  // namespace

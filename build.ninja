@@ -1,0 +1,126 @@
+# Hand-written Ninja build for the standalone bsdiff checkout.
+# It builds bsdiff/bspatch against the sibling ../libdivsufsort source tree.
+# External system dependencies: libbz2 and Brotli development headers/libs.
+
+ninja_required_version = 1.8
+
+cxx = c++
+cc = cc
+ar = ar
+
+bsdiff_dir = .
+divsufsort_dir = ../libdivsufsort
+builddir = build
+
+common_cflags = -O3 -g -Wall -Wextra -Werror -Wno-unused-parameter -fPIC -D_FILE_OFFSET_BITS=64
+cflags = $common_cflags -DHAVE_CONFIG_H -I$divsufsort_dir/android_include -I$divsufsort_dir/include
+cxxflags = $common_cflags -std=c++14 -Wnon-virtual-dtor -Iinclude -I.. -I$divsufsort_dir/android_include -I$divsufsort_dir/include
+ldflags =
+
+rule cc
+  command = $cc $cflags $defines -MMD -MF $out.d -c $in -o $out
+  depfile = $out.d
+  deps = gcc
+  description = CC $out
+
+rule cxx
+  command = $cxx $cxxflags $defines -MMD -MF $out.d -c $in -o $out
+  depfile = $out.d
+  deps = gcc
+  description = CXX $out
+
+rule ar
+  command = rm -f $out && $ar rcs $out $in
+  description = AR $out
+
+rule link
+  command = $cxx $ldflags -o $out $in $libs
+  description = LINK $out
+
+# libdivsufsort, built twice: 32-bit saidx_t API and 64-bit saidx64_t API.
+build $builddir/divsufsort/divsufsort.o: cc $divsufsort_dir/lib/divsufsort.c
+build $builddir/divsufsort/sssort.o: cc $divsufsort_dir/lib/sssort.c
+build $builddir/divsufsort/trsort.o: cc $divsufsort_dir/lib/trsort.c
+build $builddir/divsufsort/utils.o: cc $divsufsort_dir/lib/utils.c
+build $builddir/libdivsufsort.a: ar $builddir/divsufsort/divsufsort.o $builddir/divsufsort/sssort.o $builddir/divsufsort/trsort.o $builddir/divsufsort/utils.o
+
+build $builddir/divsufsort64/divsufsort.o: cc $divsufsort_dir/lib/divsufsort.c
+  defines = -DBUILD_DIVSUFSORT64
+build $builddir/divsufsort64/sssort.o: cc $divsufsort_dir/lib/sssort.c
+  defines = -DBUILD_DIVSUFSORT64
+build $builddir/divsufsort64/trsort.o: cc $divsufsort_dir/lib/trsort.c
+  defines = -DBUILD_DIVSUFSORT64
+build $builddir/divsufsort64/utils.o: cc $divsufsort_dir/lib/utils.c
+  defines = -DBUILD_DIVSUFSORT64
+build $builddir/libdivsufsort64.a: ar $builddir/divsufsort64/divsufsort.o $builddir/divsufsort64/sssort.o $builddir/divsufsort64/trsort.o $builddir/divsufsort64/utils.o
+
+# bsdiff library objects.
+build $builddir/bsdiff/brotli_compressor.o: cxx brotli_compressor.cc
+build $builddir/bsdiff/bsdiff.o: cxx bsdiff.cc
+build $builddir/bsdiff/bsdiff_zip.o: cxx bsdiff_zip.cc
+build $builddir/bsdiff/bz2_compressor.o: cxx bz2_compressor.cc
+build $builddir/bsdiff/compressor_buffer.o: cxx compressor_buffer.cc
+build $builddir/bsdiff/diff_encoder.o: cxx diff_encoder.cc
+build $builddir/bsdiff/endsley_patch_writer.o: cxx endsley_patch_writer.cc
+build $builddir/bsdiff/logging.o: cxx logging.cc
+build $builddir/bsdiff/patch_writer.o: cxx patch_writer.cc
+build $builddir/bsdiff/patch_writer_factory.o: cxx patch_writer_factory.cc
+build $builddir/bsdiff/split_patch_writer.o: cxx split_patch_writer.cc
+build $builddir/bsdiff/suffix_array_index.o: cxx suffix_array_index.cc
+
+build $builddir/libbsdiff.a: ar $
+  $builddir/bsdiff/brotli_compressor.o $
+  $builddir/bsdiff/bsdiff.o $
+  $builddir/bsdiff/bsdiff_zip.o $
+  $builddir/bsdiff/bz2_compressor.o $
+  $builddir/bsdiff/compressor_buffer.o $
+  $builddir/bsdiff/diff_encoder.o $
+  $builddir/bsdiff/endsley_patch_writer.o $
+  $builddir/bsdiff/logging.o $
+  $builddir/bsdiff/patch_writer.o $
+  $builddir/bsdiff/patch_writer_factory.o $
+  $builddir/bsdiff/split_patch_writer.o $
+  $builddir/bsdiff/suffix_array_index.o
+
+# bspatch library objects.
+build $builddir/bspatch/brotli_decompressor.o: cxx brotli_decompressor.cc
+build $builddir/bspatch/bspatch.o: cxx bspatch.cc
+build $builddir/bspatch/bz2_decompressor.o: cxx bz2_decompressor.cc
+build $builddir/bspatch/buffer_file.o: cxx buffer_file.cc
+build $builddir/bspatch/decompressor_interface.o: cxx decompressor_interface.cc
+build $builddir/bspatch/extents.o: cxx extents.cc
+build $builddir/bspatch/extents_file.o: cxx extents_file.cc
+build $builddir/bspatch/file.o: cxx file.cc
+build $builddir/bspatch/memory_file.o: cxx memory_file.cc
+build $builddir/bspatch/patch_reader.o: cxx patch_reader.cc
+build $builddir/bspatch/sink_file.o: cxx sink_file.cc
+build $builddir/bspatch/utils.o: cxx utils.cc
+
+build $builddir/libbspatch.a: ar $
+  $builddir/bspatch/brotli_decompressor.o $
+  $builddir/bspatch/bspatch.o $
+  $builddir/bspatch/bz2_decompressor.o $
+  $builddir/bspatch/buffer_file.o $
+  $builddir/bspatch/decompressor_interface.o $
+  $builddir/bspatch/extents.o $
+  $builddir/bspatch/extents_file.o $
+  $builddir/bspatch/file.o $
+  $builddir/bsdiff/logging.o $
+  $builddir/bspatch/memory_file.o $
+  $builddir/bspatch/patch_reader.o $
+  $builddir/bspatch/sink_file.o $
+  $builddir/bspatch/utils.o
+
+build $builddir/bsdiff/bsdiff_arguments.o: cxx bsdiff_arguments.cc
+build $builddir/bsdiff/bsdiff_main.o: cxx bsdiff_main.cc
+build $builddir/bspatch/bspatch_main.o: cxx bspatch_main.cc
+
+build bsdiff: link $builddir/bsdiff/bsdiff_arguments.o $builddir/bsdiff/bsdiff_main.o $builddir/libbsdiff.a $builddir/libdivsufsort.a $builddir/libdivsufsort64.a
+  libs = -lbz2 -lbrotlienc -lbrotlicommon
+
+build bspatch: link $builddir/bspatch/bspatch_main.o $builddir/libbspatch.a
+  libs = -lbz2 -lbrotlidec -lbrotlicommon
+
+build all: phony bsdiff bspatch
+
+default all

@@ -51,6 +51,36 @@ int bsdiff(const uint8_t* old_buf,
            PatchWriterInterface* patch,
            SuffixArrayIndexInterface** sai_cache);
 
+// ZIP-aware variant. If both inputs are ZIP32 archives, compressed payloads of
+// entries with the same name (and same occurrence number for duplicate names)
+// are diffed independently against the matching old entry. All other bytes are
+// emitted through the normal bsdiff algorithm. The resulting patch is still a
+// standard bsdiff/bspatch patch and can be applied with the existing bspatch.
+BSDIFF_EXPORT
+int bsdiff_zip(const uint8_t* old_buf,
+               size_t oldsize,
+               const uint8_t* new_buf,
+               size_t newsize,
+               const char* patch_filename,
+               SuffixArrayIndexInterface** sai_cache);
+
+BSDIFF_EXPORT
+int bsdiff_zip(const uint8_t* old_buf,
+               size_t oldsize,
+               const uint8_t* new_buf,
+               size_t newsize,
+               PatchWriterInterface* patch,
+               SuffixArrayIndexInterface** sai_cache);
+
+BSDIFF_EXPORT
+int bsdiff_zip(const uint8_t* old_buf,
+               size_t oldsize,
+               const uint8_t* new_buf,
+               size_t newsize,
+               size_t min_length,
+               PatchWriterInterface* patch,
+               SuffixArrayIndexInterface** sai_cache);
+
 }  // namespace bsdiff
 
 #endif  // _BSDIFF_BSDIFF_H_
